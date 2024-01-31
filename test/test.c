@@ -55,30 +55,6 @@ int test_sai_homework_3(sai_switch_api_t *switch_api, sai_lag_api_t *lag_api){
     sai_object_id_t           port_list[MAX_PORTS];
 
     //--------------------------------------------------------------------------
-    // Verify number of ports
-    printf("----------------------------------\n");
-    printf("Verify number of ports\n");
-    printf("----------------------------------\n");
-    attrs[0].id = SAI_SWITCH_ATTR_PORT_LIST;
-    attrs[0].value.objlist.list = port_list;
-    attrs[0].value.objlist.count = MAX_PORTS;
-    
-    status = switch_api->get_switch_attribute(1, attrs);
-    if (check_status_error("get_switch_attribute", status)) return 1;
-
-    printf("Expected ports count: <= %d\n", MAX_PORTS);
-    printf("Actual ports count: %d\n\n", attrs[0].value.objlist.count);
-    if (attrs[0].value.objlist.count != MAX_PORTS)
-    {
-        printf("Ports count: test FAILED: ports count is not %d\n", MAX_PORTS);
-        return 1;
-    }
-    else
-    {
-        printf("Ports count: test PASSED\n");
-    };
-    printf("==================================\n\n");
-
     status = sai_api_query(SAI_API_LAG, (void**)&lag_api);
     if (check_status_error("sai_api_query(SAI_API_LAG)", status)) return 1;
 
@@ -100,6 +76,29 @@ int test_sai_homework_3(sai_switch_api_t *switch_api, sai_lag_api_t *lag_api){
         
         status = lag_api->create_lag(&lags[lag_number], 0, NULL);
         if (check_status_error(msg, status)) return 1;
+
+        printf("----------------------------------\n");
+        printf("Verify SAI_LAG_ATTR_PORT_LIST is available\n");
+        printf("----------------------------------\n");
+        attrs[0].id = SAI_LAG_ATTR_PORT_LIST;
+        attrs[0].value.objlist.list = port_list;
+        attrs[0].value.objlist.count = MAX_PORTS;
+            
+        status = lag_api->get_lag_attribute(lag_number, 1, attrs);
+        if (check_status_error("get_lag_attribute", status)) return 1;
+
+        printf("Expected ports count: <= %d\n", MAX_PORTS);
+        printf("Actual ports count: %d\n\n", attrs[0].value.objlist.count);
+        if (attrs[0].value.objlist.count != MAX_PORTS)
+        {
+            printf("SAI_LAG_ATTR_PORT_LIST: test FAILED: ports count is not %d\n", MAX_PORTS);
+            return 1;
+        }
+        else
+        {
+                printf("SAI_LAG_ATTR_PORT_LIST: test PASSED\n");
+        };
+        printf("==================================\n\n");        
         
         // Create LAG MEMBERS
         int lag_members_number;
@@ -116,14 +115,13 @@ int test_sai_homework_3(sai_switch_api_t *switch_api, sai_lag_api_t *lag_api){
         else
         {   
             // create random number of members for the rest of LAGs
-            
             // num = (rand() % (upper - lower + 1)) + lower
             // upper = MAX_LAG_MEMBERS-1
             // lower = 2
             // since '1' and MAX_LAG_MEMBERS are two previous cases
             // (rand() % (MAX_LAG_MEMBERS-2 + 1)) + 2
             lag_members_number = (rand() % (MAX_LAG_MEMBERS-1)) + 2;
-            printf("\n\tGenerate random number for members count (from 1 to %d): %d", MAX_LAG_MEMBERS-1, lag_members_number);
+            printf("\n\tGenerate random number for members count (from 1 to %d): %d\n", MAX_LAG_MEMBERS-1, lag_members_number);
         }
 
         printf("\n----------------------------------\n");
